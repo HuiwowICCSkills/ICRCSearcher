@@ -2,7 +2,7 @@
 
 独立检索 ICRC 国际人道法数据库（条约、条文评注、国家实践）和习惯国际人道法规则/实践。只访问 `ihl-databases.icrc.org`。
 
-仓库：<https://github.com/HuiwowICCSkills/ICRCSearcher>（私有）。
+仓库：<https://github.com/HuiwowICCSkills/ICRCSearcher>（公开）。
 
 ## 1. 环境
 
