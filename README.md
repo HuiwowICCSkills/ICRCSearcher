@@ -2,7 +2,7 @@
 
 独立检索 ICRC 国际人道法数据库（条约、条文评注、国家实践）和习惯国际人道法规则/实践。只访问 `ihl-databases.icrc.org`。
 
-仓库：<https://github.com/GDUFSICCSkills/ICRCSearcher>（私有）。
+仓库：<https://github.com/HuiwowICCSkills/ICRCSearcher>（私有）。
 
 ## 1. 环境
 
@@ -11,7 +11,7 @@ Python 3.10+，依赖 `requests`、`beautifulsoup4`、`pypdf`；无需浏览器�
 ## 2. 安装
 
 ```powershell
-git clone https://github.com/GDUFSICCSkills/ICRCSearcher.git "$env:USERPROFILE\.codex\skills\ICRCSearcher"
+git clone https://github.com/HuiwowICCSkills/ICRCSearcher.git "$env:USERPROFILE\.codex\skills\ICRCSearcher"
 python -m pip install -r "$env:USERPROFILE\.codex\skills\ICRCSearcher\requirements.txt"
 ```
 
