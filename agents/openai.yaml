@@ -1,0 +1,4 @@
+interface:
+  display_name: "ICRC 国际人道法数据库检索"
+  short_description: "检索 ICRC 条约、评注、国家实践与习惯国际人道法"
+  default_prompt: "使用 $ICRCSearcher 检索 ICRC 数据库；报告所用索引、每个索引的计数、原始记录链接，并说明术语回退是否发生。"
