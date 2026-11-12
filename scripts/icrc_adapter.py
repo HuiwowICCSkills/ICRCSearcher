@@ -66,6 +66,16 @@ def add_search_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--limit", type=int, default=10, help="1..50 per index")
     parser.add_argument("--offset", type=int, default=0, help=">= 0")
     parser.add_argument(
+        "--date-from",
+        dest="date_from",
+        help="National-practice date lower bound YYYY-MM-DD (np_search only)",
+    )
+    parser.add_argument(
+        "--date-to",
+        dest="date_to",
+        help="National-practice date upper bound YYYY-MM-DD (np_search only)",
+    )
+    parser.add_argument(
         "--no-term-fallback",
         action="store_true",
         help="Do not retry a blocked multi-word phrase as a term-by-term intersection",
@@ -132,13 +142,27 @@ def search(query: str, args: argparse.Namespace, http: HTTP) -> dict[str, Any]:
     failures = 0
     for index in indexes:
         try:
+            params: dict[str, Any] = {
+                "page[limit]": args.limit,
+                "page[offset]": args.offset,
+                "filter[fulltext]": query,
+            }
+            date_from = getattr(args, "date_from", None)
+            date_to = getattr(args, "date_to", None)
+            if index == "np_search" and (date_from or date_to):
+                params.update(
+                    {
+                        "filter[date_lower][operator]": ">=",
+                        "filter[date_lower][path]": "date",
+                        "filter[date_lower][value]": date_from or "1000-01-01",
+                        "filter[date_upper][operator]": "<=",
+                        "filter[date_upper][path]": "date",
+                        "filter[date_upper][value]": date_to or "9999-12-31",
+                    }
+                )
             data, meta = http.json(
                 f"{BASE}/{args.lang}/jsonapi/index/{index}",
-                {
-                    "page[limit]": args.limit,
-                    "page[offset]": args.offset,
-                    "filter[fulltext]": query,
-                },
+                params,
                 headers=_headers(),
             )
         except RetrievalError as exc:
@@ -196,6 +220,15 @@ def search(query: str, args: argparse.Namespace, http: HTTP) -> dict[str, Any]:
         "query": query,
         "database": args.database,
         "language": args.lang,
+        "date_range": {
+            "from": getattr(args, "date_from", None) or None,
+            "to": getattr(args, "date_to", None) or None,
+            "applied_to": (
+                ["np_search"]
+                if (getattr(args, "date_from", None) or getattr(args, "date_to", None))
+                else []
+            ),
+        },
         "total": total,
         "counts": counts,
         "results": rows,

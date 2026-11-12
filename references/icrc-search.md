@@ -50,3 +50,17 @@
 
 - `total` 是各索引计数之和，不是去重案件数。
 - 本地 Rules/Practice 书籍回退不在本 skill；需要时用 `LegalToolsSearcher`。
+
+## Search 页面的高级筛选（2026-11-12 浏览器核对）
+
+`https://ihl-databases.icrc.org/en/search` 是一个 React 表单，页面文案和控件包括：
+
+- 关键词输入 + Search type：`All Search Terms` / `Any Search Term` / `Exact Search Term`
+- 数据库单选：Treaties, States Parties and Commentaries；Customary IHL（Rules / Practice）；National Practice
+- Filters：States、Languages（English 等）、Dates（1899–2026 滑块）
+
+前端把表单编码为
+`/en/search/search-results?language=en&keyword=<词>&keywordType=all|any|exact&from=<年>&to=<年>&order=ASC&countries=<ISO代码,...>&tspc=...&cihl=...&npc=...&npt=...`。
+直接请求该 URL 会被 ICRC security policy 拦截（`Request Not Compliant`），所以当前 CLI 继续走 JSON:API；日期过滤只对 `np_search` 实测有效（`filter[date_lower]` / `filter[date_upper]`，`path=date`）：`genocide` 222 条 → 2000–2020 年 148 条。
+
+`command responsibility` 在 JSON:API 的 `filter[fulltext]` 和带引号形式都会触发站点级 403；这是查询级策略，不是网络失败。要使用站点的 All/Any/Exact 语义、States 或 Languages，需在真实浏览器中操作 Search 页，不能声称 JSON:API 已支持这些控件。

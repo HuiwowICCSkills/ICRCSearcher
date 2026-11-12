@@ -27,6 +27,9 @@ description: 独立检索 ICRC 国际人道法数据库（条约、条文评注�
 # 只查习惯国际人道法规则与实践
 & '<skill-dir>/run.ps1' search 'distinction' --database customary --limit 5
 
+# 国家实践按日期范围收窄（仅 np_search）
+& '<skill-dir>/run.ps1' search 'genocide' --database ihl --date-from 2000-01-01 --date-to 2020-12-31 --limit 5
+
 # 读取一条记录或页面
 & '<skill-dir>/run.ps1' fetch 'https://ihl-databases.icrc.org/en/...' --out './icrc-record.json' --text-out './icrc-record.txt'
 
@@ -34,12 +37,13 @@ description: 独立检索 ICRC 国际人道法数据库（条约、条文评注�
 & '<skill-dir>/run.ps1' doctor
 ```
 
-通用参数：`--out`、`--cache`、`--cache-ttl`、`--offline`、`--timeout`。`search` 另有 `--database`、`--lang`（默认 `en`）、`--limit`（每个索引 1..50）、`--offset`、`--no-term-fallback`；`fetch` 另有 `--text-out`。
+通用参数：`--out`、`--cache`、`--cache-ttl`、`--offline`、`--timeout`。`search` 另有 `--database`、`--lang`（默认 `en`）、`--limit`（每个索引 1..50）、`--offset`、`--date-from`、`--date-to`、`--no-term-fallback`；`fetch` 另有 `--text-out`。
 
 ## 结果边界
 
 - `search` 返回每条记录的 `index`、`id`、`title`、`url` 和 Drupal `attributes`；`snippet` 只从记录自身的文本字段截取，**不是**另行取得的全文。
 - `counts` 是每个索引服务端报告的命中数；`total` 是这些计数之和（能取到时）。不同索引的计数口径不完全相同，不能把 `total` 当作去重后的案件数。
+- `--date-from`/`--date-to` 目前只作用于 `np_search`（国家实践），因为这是实测可用的 JSON:API 日期过滤；其他索引仍按关键词返回。报告里的 `date_range.applied_to` 会说明这一点。站点的 Search 页面另有“All/Any/Exact Search Terms”、States、Languages、1899–2026 日期等前端筛选；JSON:API 没有与这些 UI 控件一一对应的单值参数，不能假装已经复刻。
 - ICRC 的 `filter[fulltext]` 对某些多词短语（例如 `command responsibility`）会触发站点自己的查询级 403/503，这不是 Cloudflare。适配器在**全部**索引都因该原因失败时，会退化为按词分别检索并做有界交集，结果标为 `icrc-token-intersection`，并明确说明不是站点自己的短语检索；可用 `--no-term-fallback` 关闭。
 - `status=partial` 表示部分索引成功、部分失败；`unavailable-or-incomplete` 表示本次没有取得任何记录，不能写成“没有资料”。先换单词或替代表述（例如 `superior responsibility`），再判断数据库是否不可用。
 - 习惯国际人道法的本地 Rules/Practice 书籍回退不在本 skill 内；需要旧版书籍文本时使用 `LegalToolsSearcher`，并注明版次和“不是最新线上实践”。

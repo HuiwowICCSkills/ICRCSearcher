@@ -45,23 +45,23 @@ $icrc = "$env:USERPROFILE\.codex\skills\ICRCSearcher\run.ps1"
 
 本 skill 不做 ICRC 本地 Rules/Practice 书籍的 PDF 回退；需要旧版书籍文本时使用 `LegalToolsSearcher` 并注明版次。ICRC 评注和国家实践是次级材料，条约原文和习惯法规则需分别标注。
 
-## 实测效果（2026-11-09）
+## 实测效果（2026-11-12）
 
-以下命令与结果来自本机 `~/.codex/skills/ICRCSearcher` 的实网运行；检索日期 2026-11-09（Asia/Shanghai），输出为该次运行实际返回的 JSON 报告。
+以下命令与结果来自本机 `~/.codex/skills/ICRCSearcher` 的实网运行；检索日期 2026-11-12（Asia/Shanghai），输出为该次运行实际返回的 JSON 报告。
 
 ```powershell
-& .\run.ps1 search 'command responsibility' --database all --limit 5
+$icrc = "$env:USERPROFILE\.codex\skills\ICRCSearcher\run.ps1"
+& $icrc search 'genocide' --database ihl --date-from 2000-01-01 --date-to 2020-12-31 --limit 5
 ```
 
-- 状态：`ok`；服务端/索引报告 `total = 15`；本次返回 5 条。
-- 该 `total` 是多个索引服务端计数之和，按索引拆分：`tspc_article_search = 1`、`tspc_commentary_search = 3`、`np_search = 5`、`cihl_rule_search = 6`（其余索引为 0），不是去重后的案件或文书数。
+- 状态：`ok`；各索引计数为 `tspc_treaty_search=4`、`tspc_article_search=30`、`tspc_commentary_search=219`、`tspc_participant_search=291`、`np_search=148`，合计 `total=692`；本次返回 20 条（每索引 5 条，去重前）。
+- 日期过滤：只作用于 `np_search`（国家实践）；`date_range.applied_to` 已标明。其他国家实践无日期时为 222 条，加 2000–2020 后为 148 条。
 - 代表性结果：
 
-| 题名 | 类型 / 日期 | 链接 |
+| 题名 | 索引 | 链接 |
 | --- | --- | --- |
-| Article 28 - Responsibility of commanders and other superiors | retrieved_metadata；无日期字段 | https://ihl-databases.icrc.org/en/jsonapi/paragraph/treaty_content/1e0950f9-dfa7-43e0-b495-b0f11a49ede3?resourceVersion=id%3A1594639 |
-| tspc_commentary_search: 15e0aaa0-3b8f-4ccd-a366-ff75249a3f32 | retrieved_metadata；无日期字段 | https://ihl-databases.icrc.org/en/jsonapi/paragraph/treaty_commentary/15e0aaa0-3b8f-4ccd-a366-ff75249a3f32?resourceVersion=id%3A2830178 |
-| tspc_commentary_search: dafe76c4-68a4-4b9a-97e9-48db281ff4df | retrieved_metadata；无日期字段 | https://ihl-databases.icrc.org/en/jsonapi/paragraph/treaty_commentary/dafe76c4-68a4-4b9a-97e9-48db281ff4df?resourceVersion=id%3A2846501 |
-| Ford v. Garcia (re. crimes against US citizens committed in El Salvador), Court of Appeals, Eleventh Circuit, 30 April 2002 | retrieved_metadata；无日期字段 | https://ihl-databases.icrc.org/en/national-practice/ford-v-garcia-re-crimes-against-us-citizens-committed-el-salvador-court-appeals |
+| Convention on the Prevention and Punishment of the Crime of Genocide, 9 December 1948. | tspc_treaty_search | https://ihl-databases.icrc.org/en/ihl-treaties/genocide-conv-1948 |
+| Statute of the International Criminal Tribunal for Rwanda, 8 November 1994 | tspc_treaty_search | https://ihl-databases.icrc.org/en/ihl-treaties/ictr-statute-1994 |
+| Agreement between the United Nations and the Government of Sierra Leone and Statute of the Special Court for Sierra Leone, 16 January 2002 | tspc_treaty_search | https://ihl-databases.icrc.org/en/ihl-treaties/scsl-agreement-2002 |
 
-> 说明：命中横跨条约条文索引（Article 28 原文条目）、条约评注索引（3 个评注段落）和国家实践索引（含 Ford v. Garcia 一国司法实践条目），说明 `--database all` 确实在多个索引中生效、而不是单库检索。但返回行是 ICRC Drupal JSON:API 的段落级记录（`result_type = retrieved_metadata`，`content_scope`：ICRC Drupal JSON:API record matched term-by-term and intersected locally; not a full-text judgment），只代表该段落被词项匹配，本轮没有读取段落正文；两个 `tspc_commentary_search` 行为适配器输出的记录标识而非可读题名，引用前须用 `fetch` 打开链接确认评注所属条文与段落。评注与国家实践属于次级材料，条约原文和习惯法规则须分别标注。
+> 说明：`total=692` 是各索引服务端计数之和，不是去重后的案件数；搜索结果和 `snippet` 来自记录自身字段，不是另行取得的全文。条约、评注、国家实践和习惯法规则必须分别标注。
